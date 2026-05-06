@@ -97,6 +97,6 @@ iot-hybrid-ids/
 ## Clone Repository
 
 ```bash
-git clone https://github.com/karnikaagarwal/iot-hybrid-ids.git
+git clone https://github.com/karnikaagarwal/AI-Based-Anomaly-Detection-System-for-Iot-Security.git
 
 cd iot-hybrid-ids
