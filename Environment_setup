@@ -1,0 +1,273 @@
+========================================
+HYBRID IDS ENVIRONMENT SETUP GUIDE
+========================================
+
+Project:
+Hybrid IoT Intrusion Detection System (IDS)
+
+Requirements:
+- Ubuntu Linux
+- Python 3.10+
+- Mininet
+- Open vSwitch
+- Internet Connection
+
+========================================
+1. UPDATE SYSTEM
+========================================
+
+sudo apt update
+sudo apt upgrade -y
+
+========================================
+2. INSTALL PYTHON + TOOLS
+========================================
+
+sudo apt install python3 python3-pip python3-venv -y
+
+========================================
+3. INSTALL MININET
+========================================
+
+sudo apt install mininet -y
+
+Verify:
+
+sudo mn
+
+Exit Mininet:
+
+exit
+
+========================================
+4. INSTALL OPENVSWITCH
+========================================
+
+sudo apt install openvswitch-switch -y
+
+Verify:
+
+sudo ovs-vsctl show
+
+========================================
+5. CLONE PROJECT
+========================================
+
+git clone https://github.com/yourusername/iot-hybrid-ids.git
+
+cd iot-hybrid-ids
+
+========================================
+6. CREATE VIRTUAL ENVIRONMENT
+========================================
+
+python3 -m venv iotsec-ml-env
+
+========================================
+7. ACTIVATE VIRTUAL ENVIRONMENT
+========================================
+
+source iotsec-ml-env/bin/activate
+
+You should now see:
+
+(iotsec-ml-env)
+
+========================================
+8. INSTALL PYTHON DEPENDENCIES
+========================================
+
+pip install --upgrade pip
+
+pip install scapy
+pip install flask
+pip install flask-socketio
+pip install eventlet
+pip install scikit-learn
+pip install joblib
+pip install pandas
+pip install numpy
+pip install matplotlib
+
+OR simply run:
+
+pip install -r requirements.txt
+
+========================================
+9. VERIFY INSTALLATIONS
+========================================
+
+Python:
+
+python3 --version
+
+Pip:
+
+pip --version
+
+Scapy:
+
+python3 -c "import scapy"
+
+Flask:
+
+python3 -c "import flask"
+
+Scikit-learn:
+
+python3 -c "import sklearn"
+
+========================================
+10. CREATE REQUIRED FILES
+========================================
+
+mkdir logs
+
+touch logs/alerts.log
+
+========================================
+11. RUN DASHBOARD
+========================================
+
+Terminal 1:
+
+sudo ~/iotsec-ml-env/bin/python -m phase3_hybrid_ids.dashboard_api
+
+Dashboard will run at:
+
+http://localhost:5000
+
+========================================
+12. RUN IDS
+========================================
+
+Terminal 2:
+
+sudo ~/iotsec-ml-env/bin/python -m phase1_rule_ids.run_ids
+
+========================================
+13. START MININET
+========================================
+
+sudo mn --topo single,5 --controller=none
+
+========================================
+14. TEST NETWORK
+========================================
+
+Inside Mininet:
+
+pingall
+
+========================================
+15. GENERATE ATTACK TRAFFIC
+========================================
+
+SYN Flood:
+
+h1 hping3 -S --flood -p 80 10.0.0.2
+
+UDP Flood:
+
+h1 hping3 --udp --flood -p 53 10.0.0.2
+
+Port Scan:
+
+h1 nmap -sS -p 1-1000 10.0.0.2
+
+========================================
+16. TRAIN MACHINE LEARNING MODEL
+========================================
+
+Generate Dataset:
+
+python3 phase2_ml_ids/dataset_generator.py
+
+Train Model:
+
+python3 phase2_ml_ids/train_model.py
+
+========================================
+17. DEACTIVATE ENVIRONMENT
+========================================
+
+deactivate
+
+========================================
+18. COMMON TROUBLESHOOTING
+========================================
+
+Problem:
+ModuleNotFoundError
+
+Fix:
+
+Activate environment:
+
+source iotsec-ml-env/bin/activate
+
+----------------------------------------
+
+Problem:
+iptables permission denied
+
+Fix:
+
+Always run IDS using sudo:
+
+sudo ~/iotsec-ml-env/bin/python -m phase1_rule_ids.run_ids
+
+----------------------------------------
+
+Problem:
+No interfaces found
+
+Fix:
+
+Start Mininet first:
+
+sudo mn
+
+----------------------------------------
+
+Problem:
+Dashboard not opening
+
+Fix:
+
+Check Flask running on port 5000
+
+========================================
+19. PROJECT COMPONENTS
+========================================
+
+Phase 1:
+Rule-Based IDS
+
+Phase 2:
+Machine Learning IDS
+
+Phase 3:
+Dashboard + Monitoring
+
+========================================
+20. SYSTEM WORKFLOW
+========================================
+
+Network Traffic
+       ↓
+Packet Sniffer
+       ↓
+Feature Extraction
+       ↓
+Rule-Based Detection
+       ↓
+ML Detection
+       ↓
+Alert Generation
+       ↓
+Dashboard Visualization
+
+========================================
+SETUP COMPLETE
+========================================
