@@ -1,30 +1,20 @@
-import time
+from scapy.layers.inet import IP, TCP
 
-flow_table = {}
+def extract_features(packet):
 
-def extract_features(pkt):
-
-    try:
-        src = pkt[0][1].src
-    except:
-        src = "unknown"
-
-    now = time.time()
-
-    if src not in flow_table:
-        flow_table[src] = {
-            "count": 0,
-            "start": now
-        }
-
-    flow_table[src]["count"] += 1
-
-    duration = now - flow_table[src]["start"]
-
-    rate = flow_table[src]["count"] / (duration + 0.01)
-
-    return {
-        "src_ip": src,
-        "packet_rate": rate,
-        "timestamp": now
+    features = {
+        "src_ip": None,
+        "dst_ip": None,
+        "packet_size": 0,
+        "tcp_flags": 0
     }
+
+    if packet.haslayer(IP):
+        features["src_ip"] = packet[IP].src
+        features["dst_ip"] = packet[IP].dst
+        features["packet_size"] = len(packet)
+
+    if packet.haslayer(TCP):
+        features["tcp_flags"] = packet[TCP].flags
+
+    return features

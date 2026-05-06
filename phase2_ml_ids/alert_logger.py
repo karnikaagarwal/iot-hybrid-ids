@@ -16,9 +16,8 @@ Time        : {timestamp}
 
     print(full_alert)
 
-    # save full log
     with open(LOG_FILE, "a") as f:
         f.write(full_alert + "\n")
 
-    # 🔥 THIS IS THE CRITICAL LINE
+    # 🔥 THIS FIXES EVERYTHING
     update_alert(full_alert)

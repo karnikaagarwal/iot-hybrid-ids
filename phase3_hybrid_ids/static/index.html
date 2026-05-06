@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hybrid IDS Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: Arial; background: #111; color: #eee; }
+        .card { background: #222; padding: 15px; margin: 10px; border-radius: 8px; }
+        .row { display: flex; }
+        button { padding: 5px; }
+
+        /* 🔥 FIX ADDED (alert formatting) */
+        #alertList li {
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+            border-left: 3px solid red;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🚀 Hybrid IDS Dashboard</h1>
+
+<div class="row">
+    <div class="card">Packets/sec: <span id="packets"></span></div>
+    <div class="card">Alerts (live): <span id="alerts"></span></div>
+    <div class="card">Blocked: <span id="blocked"></span></div>
+</div>
+
+<h2>📈 Traffic</h2>
+<canvas id="trafficChart"></canvas>
+
+<h2>🚨 Live Alerts</h2>
+<ul id="alertList"></ul>
+
+<h2>🚫 Blocked IPs</h2>
+<ul id="blockedList"></ul>
+
+<h3>Manual Block</h3>
+<input type="text" id="manualIP" placeholder="Enter IP">
+<button onclick="blockManual()">Block IP</button>
+
+<br><br>
+<a href="/download_logs">Download Logs</a>
+
+<script>
+
+let chartData = [];
+let labels = [];
+let lastTotal = 0;
+
+const ctx = document.getElementById("trafficChart");
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Packets/sec',
+            data: chartData
+        }]
+    }
+});
+
+function updateDashboard() {
+
+    // -------- STATS --------
+    fetch("/stats")
+    .then(res => res.json())
+    .then(data => {
+
+        let rate = data.total_packets - lastTotal;
+        lastTotal = data.total_packets;
+
+        document.getElementById("packets").innerText = rate;
+        document.getElementById("alerts").innerText = data.alerts;
+        document.getElementById("blocked").innerText = data.blocked;
+
+        labels.push(new Date().toLocaleTimeString());
+        chartData.push(rate);
+
+        if (labels.length > 15) {
+            labels.shift();
+            chartData.shift();
+        }
+
+        chart.update();
+    });
+
+    // -------- LIVE ALERTS (FIXED + NO FLICKER) --------
+    fetch("/alerts")
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById("alertList");
+
+        // 🔥 OPTIONAL FIX (prevent flicker)
+        if (JSON.stringify(data) !== window.lastAlerts) {
+            list.innerHTML = "";
+
+            data.forEach(a => {
+                let li = document.createElement("li");
+                li.innerText = a;
+                list.appendChild(li);
+            });
+
+            window.lastAlerts = JSON.stringify(data);
+        }
+    });
+
+    // -------- BLOCKED --------
+    fetch("/blocked")
+    .then(res => res.json())
+    .then(data => {
+        let list = document.getElementById("blockedList");
+        list.innerHTML = "";
+
+        data.forEach(ip => {
+            let li = document.createElement("li");
+            li.innerHTML = `${ip.ip} (${ip.time_left}s)
+                <button onclick="unblock('${ip.ip}')">Unblock</button>`;
+            list.appendChild(li);
+        });
+    });
+}
+
+function unblock(ip) {
+    fetch("/unblock", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ip: ip})
+    });
+}
+
+function blockManual() {
+    let ip = document.getElementById("manualIP").value;
+
+    fetch("/block_manual", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ip: ip})
+    });
+}
+
+// 🔥 IMPORTANT: refresh every second
+setInterval(updateDashboard, 1000);
+
+</script>
+
+</body>
+</html>
